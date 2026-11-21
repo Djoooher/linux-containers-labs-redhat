@@ -1,0 +1,141 @@
+# Podman Networking
+
+## 1. Why do we need container networking?
+
+Containers need networks to communicate with each other.
+
+Example: A web application has three containers:
+
+- UI: Frontend
+- API: Backend
+- Database: PostgreSQL
+
+We can isolate communication using separate networks:
+
+- `ui-network`: UI + API
+- `api-network`: API + Database
+
+This prevents the UI from directly communicating with the database.
+
+## 2. Essential Podman Network Commands
+
+| Command | Purpose |
+|---|---|
+| `podman network create` | Create a network |
+| `podman network ls` | List networks |
+| `podman network inspect` | Inspect network configuration |
+| `podman network rm` | Remove a network |
+| `podman network prune` | Remove unused networks |
+| `podman network connect` | Connect a container to a network |
+| `podman network disconnect` | Disconnect a container |
+
+## 3. Practical Examples
+
+### Create a network
+
+```bash
+podman network create example-net
+```
+
+### List networks
+
+```bash
+podman network ls
+```
+
+### Inspect a network
+
+```bash
+podman network inspect example-net
+```
+
+### Start a container on a network
+
+```bash
+podman run -d \
+  --name my-container \
+  --network example-net \
+  nginx
+```
+
+### Connect an existing container
+
+```bash
+podman network connect example-net my-container
+```
+
+### Disconnect a container
+
+```bash
+podman network disconnect example-net my-container
+```
+
+### Remove a network
+
+```bash
+podman network rm example-net
+```
+
+### Remove unused networks
+
+```bash
+podman network prune
+```
+
+## 4. Network Isolation
+
+Create an isolated network:
+
+```bash
+podman network create -o isolate=true ui-network
+```
+
+Create another isolated network:
+
+```bash
+podman network create -o isolate=true api-network
+```
+
+Containers on different isolated networks cannot communicate directly through those networks.
+
+## 5. Container-to-Container Communication
+
+Start an Nginx container:
+
+```bash
+podman run -d \
+  --name nginx-container \
+  --network test-net \
+  nginx
+```
+
+From another container on the same DNS-enabled network:
+
+```bash
+curl http://nginx-container:80
+```
+
+The container name can resolve to its IP address through Podman's DNS.
+
+## 6. Important Concepts
+
+- **Rootful:** Containers run with root privileges.
+- **Rootless:** Containers run without root privileges.
+- **Bridge network:** Provides a virtual network connecting containers.
+- **DNS:** Allows containers to communicate using container names.
+- **Pasta:** Default rootless networking backend starting with Podman 5.
+
+## 7. Official Documentation
+
+- https://docs.podman.io/en/v5.8.2/markdown/podman-network.1.html
+- https://docs.podman.io/en/v5.8.2/markdown/podman-network-create.1.html
+- https://github.com/podman-container-tools/podman/blob/v5.8.2/docs/tutorials/basic_networking.md
+
+## 8. My Practice Checklist
+
+- [ ] Create a Podman network.
+- [ ] Start two containers on the same network.
+- [ ] Test communication using container names.
+- [ ] Connect an existing container to a network.
+- [ ] Test network isolation.
+- [ ] Inspect and remove networks.
